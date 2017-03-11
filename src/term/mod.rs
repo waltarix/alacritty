@@ -1225,7 +1225,7 @@ impl ansi::Handler for Term {
 
         {
             // Number of cells the char will occupy
-            if let Some(width) = c.width() {
+            if let Some(width) = c.width_cjk() {
                 // Sigh, borrowck making us check the width twice. Hopefully the
                 // optimizer can fix it.
                 let num_cols = self.grid.num_cols();

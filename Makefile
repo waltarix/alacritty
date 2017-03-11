@@ -11,6 +11,8 @@ APP_BINARY_DIR  = $(APP_DIR)/$(APP_NAME)/Contents/MacOS
 DMG_NAME = Alacritty.dmg
 DMG_DIR = $(RELEASE_DIR)/osx
 
+UNICODE_WIDTH_DIR = unicode-width
+
 vpath $(TARGET) $(RELEASE_DIR)
 vpath $(APP_NAME) $(APP_DIR)
 vpath $(DMG_NAME) $(APP_DIR)
@@ -21,7 +23,7 @@ help: ## Prints help for targets with comments
 	@grep -E '^[a-zA-Z._-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 binary: | $(TARGET) ## Build release binary with cargo
-$(TARGET):
+$(TARGET): $(UNICODE_WIDTH_DIR)
 	cargo build --release
 
 app: | $(APP_NAME) ## Clone Alacritty.app template and mount binary
@@ -44,7 +46,12 @@ $(DMG_NAME): $(APP_NAME)
 install: $(DMG_NAME) ## Mount disk image
 	@open $(DMG_DIR)/$(DMG_NAME)
 
-.PHONY: app binary clean dmg install
+.PHONY: app binary clean dmg install patch
 
 clean: ## Remove all artifacts
 	-rm -rf $(APP_DIR)
+
+patch: | $(UNICODE_WIDTH_DIR)
+$(UNICODE_WIDTH_DIR):
+	git clone https://github.com/unicode-rs/unicode-width.git $(UNICODE_WIDTH_DIR)
+	patch -d $(UNICODE_WIDTH_DIR) -p1 < unicode-width.patch
